@@ -5,3 +5,4 @@ secrets/
 *.key
 *.pem
 bootstrap/argocd/repo-secret.yaml
+bootstrap/argocd/repo-secret.yaml
