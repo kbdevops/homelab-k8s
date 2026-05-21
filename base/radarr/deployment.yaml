@@ -36,7 +36,7 @@ spec:
           path: /home/obiwan/k8s_data/radarr/config
       - name: downloads
         hostPath:
-          path: /home/obiwan/media/downloads
+          path: /home/obiwan/downloads
       - name: movies
         hostPath:
-          path: /home/obiwan/media/movies
+          path: /home/obiwan/movies

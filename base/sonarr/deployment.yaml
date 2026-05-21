@@ -28,14 +28,14 @@ spec:
         - name: downloads
           mountPath: /downloads
         - name: tv
-          mountPath: /tv          
+          mountPath: /tv
       volumes:
       - name: config
         hostPath:
           path: /home/obiwan/k8s_data/sonarr/config
       - name: downloads
         hostPath:
-          path: /home/obiwan/media/downloads
+          path: /home/obiwan/downloads
       - name: tv
         hostPath:
-          path: /home/obiwan/media/tv   
+          path: /home/obiwan/tv
