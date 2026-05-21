@@ -24,7 +24,12 @@ spec:
         volumeMounts:
         - name: config
           mountPath: /app/config
+        - name: icons
+          mountPath: /app/public/icons
       volumes:
       - name: config
         hostPath:
           path: /home/obiwan/k8s_data/homepage/config/
+      - name: icons
+        hostPath:
+          path: /home/obiwan/k8s_data/homepage/config/icons/
