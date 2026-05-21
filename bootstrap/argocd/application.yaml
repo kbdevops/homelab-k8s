@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: homelab
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/kbdevops/homelab-k8s
+    targetRevision: main
+    path: base
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: media
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
