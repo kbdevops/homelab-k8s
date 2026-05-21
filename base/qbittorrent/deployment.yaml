@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qbittorrent
+  namespace: media
+spec:
+  selector:
+    matchLabels:
+      app: qbittorrent
+  template:
+    metadata:
+      labels:
+        app: qbittorrent
+    spec:
+      containers:
+      - name: qbittorrent
+        image: lscr.io/linuxserver/qbittorrent:latest
+        env:
+        - name: PUID
+          value: "1000"
+        - name: PGID
+          value: "1000"
+        - name: WEBUI_PORT
+          value: "8080"
+        ports:
+        - containerPort: 8080
+        - containerPort: 6881
+        - containerPort: 6881
+          protocol: UDP
+        volumeMounts:
+        - name: config
+          mountPath: /config
+        - name: downloads
+          mountPath: /downloads
+        - name: media
+          mountPath: /media
+        - name: movies
+          mountPath: /movies
+        - name: tv
+          mountPath: /tv
+      volumes:
+        - name: config
+          hostPath:
+            path: /home/obiwan/k8s_data/qbittorrent/config
+            type: DirectoryOrCreate
+        - name: downloads
+          hostPath:
+            path: /home/obiwan/media/downloads
+            type: DirectoryOrCreate
+        - name: media
+          hostPath:
+            path: /home/obiwan/media
+            type: Directory
+        - name: movies
+          hostPath:
+            path: /home/obiwan/media/movies
+            type: Directory
+        - name: tv
+          hostPath:
+            path: /home/obiwan/media/tv
+            type: Directory

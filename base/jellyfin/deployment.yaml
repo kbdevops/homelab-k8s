@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jellyfin
+  labels:
+    app: jellyfin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jellyfin
+  template:
+    metadata:
+      labels:
+        app: jellyfin
+    spec:
+      # Removed the strict pod-level securityContext to allow s6-overlay to function
+      containers:
+      - name: jellyfin
+        image: lscr.io/linuxserver/jellyfin:latest
+        env:
+        - name: TZ
+          value: "Australia/Melbourne"
+        - name: PUID
+          value: "1000"
+        - name: PGID
+          value: "1000"
+        ports:
+        - containerPort: 8096
+          name: http
+        volumeMounts:
+        - name: config-volume
+          mountPath: /config
+        - name: cache-volume
+          mountPath: /cache
+        - name: media-volume
+          mountPath: /media
+        - name: movies-volume
+          mountPath: /movies
+        - name: tv-volume
+          mountPath: /tv
+      volumes:
+      - name: config-volume
+        persistentVolumeClaim:
+          claimName: jellyfin-config-pvc
+      - name: cache-volume
+        hostPath:
+          path: /home/obiwan/k8s_data/jellyfin/cache
+          type: DirectoryOrCreate
+      - name: media-volume
+        hostPath:
+          path: /home/obiwan/media_server/media
+          type: DirectoryOrCreate
+      - name: movies-volume
+        hostPath:
+          path: /home/obiwan/movies
+          type: Directory
+      - name: tv-volume
+        hostPath:
+          path: /home/obiwan/tv
+          type: Directory

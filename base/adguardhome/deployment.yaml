@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: adguardhome
+  namespace: adguard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: adguardhome
+  template:
+    metadata:
+      labels:
+        app: adguardhome
+    spec:
+      containers:
+        - name: adguardhome
+          image: adguard/adguardhome:latest
+          ports:
+            - containerPort: 53
+              protocol: TCP
+              name: dns-tcp
+            - containerPort: 53
+              protocol: UDP
+              name: dns-udp
+            - containerPort: 80
+              name: web
+            - containerPort: 3000
+              name: setup
+          volumeMounts:
+            - name: conf
+              mountPath: /opt/adguardhome/conf
+            - name: work
+              mountPath: /opt/adguardhome/work
+      volumes:
+        - name: conf
+          hostPath:
+            path: /home/obiwan/k8s_data/adguardhome/conf
+            type: DirectoryOrCreate
+        - name: work
+          hostPath:
+            path: /home/obiwan/k8s_data/adguardhome/work
+            type: DirectoryOrCreate

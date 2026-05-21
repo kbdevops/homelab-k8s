@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bazarr
+  namespace: media
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bazarr
+  template:
+    metadata:
+      labels:
+        app: bazarr
+    spec:
+      containers:
+        - name: bazarr
+          image: lscr.io/linuxserver/bazarr:latest
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: "Etc/UTC"
+          ports:
+            - containerPort: 6767
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: movies
+              mountPath: /movies
+            - name: tv
+              mountPath: /tv
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 6767
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 6767
+            initialDelaySeconds: 10
+            periodSeconds: 10
+      volumes:
+        - name: config
+          hostPath:
+            path: /home/obiwan/k8s_data/bazarr
+            type: DirectoryOrCreate
+        - name: movies
+          hostPath:
+            path: /home/obiwan/movies
+            type: Directory
+        - name: tv
+          hostPath:
+            path: /home/obiwan/tv
+            type: Directory
