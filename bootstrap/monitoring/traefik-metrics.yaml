@@ -10,3 +10,9 @@ spec:
         enabled: true
         serviceMonitor:
           enabled: true
+    logs:
+      access:
+        enabled: true
+    service:
+      spec:
+        externalTrafficPolicy: Local
