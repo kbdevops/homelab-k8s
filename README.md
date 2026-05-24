@@ -86,7 +86,8 @@ graph TD
     class K3s_Cluster clusterStyle;
     class ns_media mediaStyle;
     class ns_monitoring monitorStyle;
-    class ns_adguard,AGH fill:#7C2D12,stroke:#9A3412,color:#fff;
+    class ns_adguard fill:#7C2D12,stroke:#9A3412,color:#fff;
+    class AGH fill:#7C2D12,stroke:#9A3412,color:#fff;
     class ns_argocd systemStyle;
 
     %% Connect Ingress and GitOps Engines to Context Targets
