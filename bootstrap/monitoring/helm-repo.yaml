@@ -12,7 +12,7 @@ spec:
   valuesContent: |-
     grafana:
       adminUser: obiwan
-      adminPassword: obiwan
+      adminPassword: kenobi
       ingress:
         enabled: true
         ingressClassName: traefik
