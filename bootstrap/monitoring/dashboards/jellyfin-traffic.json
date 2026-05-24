@@ -1,0 +1,16 @@
+{
+  "title": "Jellyfin Traffic",
+  "panels": [
+    {
+      "title": "Jellyfin Requests",
+      "type": "logs",
+      "datasource": "Loki",
+      "targets": [
+        {
+          "expr": "{namespace=\"kube-system\"} |= \"jellyfin\"",
+          "legendFormat": ""
+        }
+      ]
+    }
+  ]
+}
