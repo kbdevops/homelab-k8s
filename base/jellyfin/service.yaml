@@ -4,10 +4,10 @@ metadata:
   name: jellyfin
   namespace: media
 spec:
-  type: LoadBalancer
   selector:
     app: jellyfin
+  type: ClusterIP
   ports:
-  - name: http
-    port: 8096
-    targetPort: 8096
+    - name: web
+      port: 8096
+      targetPort: 8096
