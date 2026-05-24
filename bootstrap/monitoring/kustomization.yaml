@@ -6,3 +6,5 @@ resources:
   - traefik-metrics.yaml
   - prometheus-ingress.yaml
   - loki.yaml
+  - loki-datasource.yaml
+  - dashboards/
