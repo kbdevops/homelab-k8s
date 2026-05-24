@@ -16,6 +16,91 @@ Personal homelab running on k3s with GitOps via ArgoCD.
 | Homepage | Dashboard | http://homepage.internal |
 | AdGuard Home | DNS Ad Blocker | http://adguard.internal |
 | ArgoCD | GitOps | http://argocd.internal |
+| Grafana | Monitoring | http://grafana.internal |
+| Prometheus | Metrics | http://prometheus.internal |
+
+## Architecture
+
+Your homelab runs a declarative GitOps engine inside a single-node K3s context, managing structured tenant isolation across namespaces. Local DNS resolutions point wildcard internal traffic directly to the host IP, where Traefik handles Layer 7 route matching.
+
+```mermaid
+graph TD
+    %% Global Styling
+    classDef clusterStyle fill:#1a1a1a,stroke:#333,stroke-width:2px,color:#fff;
+    classDef nsStyle fill:#24292e,stroke:#444,stroke-width:1px,color:#fff;
+    classDef mediaStyle fill:#1D4ED8,stroke:#2563EB,color:#fff;
+    classDef monitorStyle fill:#78350F,stroke:#92400E,color:#fff;
+    classDef systemStyle fill:#4C1D95,stroke:#5B21B6,color:#fff;
+    classDef netStyle fill:#064E3B,stroke:#047857,color:#fff;
+
+    %% External & Network Ingress Flow
+    subgraph Traffic_Routing [Network Edge & Ingress]
+        direction LR
+        Internet((Internet)) -->|Port 80/443| Router[Router NAT]
+        LAN[Local LAN] -->|DNS Query :53| AG_DNS[AdGuard DNS<br/>*.internal &rarr; 192.168.1.108]
+        
+        Router -->|Forward| Traefik[Traefik Ingress Controller<br/>Ports :80 / :443]
+        LAN -->|HTTP Traffic| Traefik
+    end
+    class Traefik,AG_DNS netStyle;
+
+    %% GitOps Automation Loop
+    subgraph GitOps_Engine [Continuous Delivery]
+        Git[GitHub Repository<br/>kbdevops/homelab-k8s] -->|Webhook / Poll| Argo[ArgoCD Engine<br/>Auto-Sync 60s]
+    end
+    class Argo systemStyle;
+
+    %% K3s Compute Boundary
+    subgraph K3s_Cluster [K3s Single Node Cluster — obiwan @ 192.168.1.108]
+        direction TB
+
+        subgraph ns_media [Namespace: media]
+            Jellyfin[jellyfin.internal]
+            Sonarr[sonarr.internal]
+            Radarr[radarr.internal]
+            Prowlarr[prowlarr.internal]
+            qBit[qbit.internal]
+            Bazarr[bazarr.internal]
+            HA[ha.internal]
+            Homepage[homepage.internal]
+        end
+
+        subgraph ns_monitoring [Namespace: monitoring]
+            Prom[prometheus.internal]
+            Graf[grafana.internal]
+            Loki[Loki Engine]
+            Tail[Promtail Collector]
+            AM[Alertmanager]
+        end
+
+        subgraph ns_adguard [Namespace: adguard]
+            AGH[adguard.internal]
+        end
+
+        subgraph ns_argocd [Namespace: argocd]
+            ArgoCore[argocd.internal]
+        end
+    end
+    
+    %% Apply Colors to Namespaces
+    class K3s_Cluster clusterStyle;
+    class ns_media mediaStyle;
+    class ns_monitoring monitorStyle;
+    class ns_adguard,AGH fill:#7C2D12,stroke:#9A3412,color:#fff;
+    class ns_argocd systemStyle;
+
+    %% Connect Ingress and GitOps Engines to Context Targets
+    Argo -->|Deploys Manifests| K3s_Cluster
+    Traefik -->|Route: /| Homepage
+    Traefik -->|Route: /| Jellyfin
+    Traefik -->|Route: /| Graf
+    Traefik -->|Route: /| ArgoCore
+    
+    %% Internal Scrape Path Representation
+    Tail -.->|Gathers Logs| Loki
+    Prom -.->|Scrapes Telemetry| K3s_Cluster
+
+```
 
 ## Bootstrap a fresh cluster
 
@@ -69,7 +154,10 @@ kubectl create secret generic homelab-repo \
   -n argocd
 kubectl label secret -n argocd homelab-repo argocd.argoproj.io/secret-type=repository
 
-### 6. ArgoCD will deploy everything automatically
+### 6. ArgoCD deploys everything automatically
+ArgoCD watches the repo and deploys:
+- base/ -> media + adguard namespaces
+- bootstrap/monitoring/ -> monitoring namespace
 
 ## Data Layout
 
@@ -77,6 +165,14 @@ kubectl label secret -n argocd homelab-repo argocd.argoproj.io/secret-type=repos
 /home/obiwan/movies/      - Movie files
 /home/obiwan/tv/          - TV show files
 /home/obiwan/media/       - Downloads directory
+
+## Monitoring
+
+- Grafana: http://grafana.internal (obiwan/kenobi)
+- Prometheus: http://prometheus.internal
+- Dashboards: Node Exporter, Kubernetes Pods, ArgoCD, Traefik, Jellyfin Traffic
+- Logs: Loki + Promtail collecting all pod logs
+- Jellyfin traffic dashboard shows source IPs, response codes, slow requests
 
 ## AdGuard DNS Rewrites
 
@@ -91,7 +187,22 @@ Point these to 192.168.1.108 in AdGuard:
 - homepage.internal
 - adguard.internal
 - argocd.internal
+- grafana.internal
+- prometheus.internal
 
 ## Router
 
-Set primary DNS to 192.168.1.108 (AdGuard) in DHCP settings.
+- Primary DNS: 192.168.1.108 (AdGuard)
+- Port forward: 80 -> 192.168.1.108:80 (Traefik)
+- External access: http://161.8.205.5 -> Jellyfin (catch-all)
+
+## Credentials
+
+- ArgoCD: admin / (reset via kubectl patch if forgotten)
+- Grafana: obiwan / kenobi
+README
+
+cd ~/homelab-k8s
+git add .
+git commit -m "docs: update README with monitoring stack and full architecture"
+git push origin main
