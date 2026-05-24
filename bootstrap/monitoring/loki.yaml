@@ -1,0 +1,25 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: loki-stack
+  namespace: kube-system
+spec:
+  repo: https://grafana.github.io/helm-charts
+  chart: loki-stack
+  version: "2.10.2"
+  targetNamespace: monitoring
+  createNamespace: true
+  valuesContent: |-
+    loki:
+      enabled: true
+      persistence:
+        enabled: true
+        storageClassName: local-path
+        size: 10Gi
+    promtail:
+      enabled: true
+      config:
+        clients:
+          - url: http://loki-stack:3100/loki/api/v1/push
+    grafana:
+      enabled: false
