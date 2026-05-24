@@ -4,8 +4,11 @@ resources:
   - namespace.yaml
   - https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
   - argocd-cmd-params.yaml
-  - argocd-cm.yaml
   - ingress.yaml
   - application.yaml
   - application-adguard.yaml
   - application-monitoring.yaml
+
+secretGenerator:
+  - name: argocd-secret
+    namespace: argocd
