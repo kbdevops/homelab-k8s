@@ -11,7 +11,8 @@ spec:
   createNamespace: true
   valuesContent: |-
     grafana:
-      adminPassword: homelab
+      adminUser: obiwan
+      adminPassword: kenobi
       ingress:
         enabled: true
         ingressClassName: traefik
