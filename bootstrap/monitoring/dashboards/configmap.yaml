@@ -16,7 +16,7 @@ data:
           "title": "Who is hitting Jellyfin (Source IPs)",
           "type": "table",
           "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
-          "datasource": "Loki",
+          "datasource": {"type": "loki", "uid": "afmzszmzg5q80f"},
           "targets": [
             {
               "expr": "sum by (ip) (count_over_time({namespace=\"kube-system\"} |= \"jellyfin\" | pattern `<ip> - -` [5m]))",
@@ -28,7 +28,7 @@ data:
           "title": "Response Codes",
           "type": "piechart",
           "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 },
-          "datasource": "Loki",
+          "datasource": {"type": "loki", "uid": "afmzszmzg5q80f"},
           "targets": [
             {
               "expr": "sum by (status) (count_over_time({namespace=\"kube-system\"} |= \"jellyfin\" | pattern `<ip> - - [<_>] \"<_> <_> <_>\" <status>` [5m]))",
@@ -40,7 +40,7 @@ data:
           "title": "Request Rate",
           "type": "timeseries",
           "gridPos": { "x": 0, "y": 8, "w": 24, "h": 8 },
-          "datasource": "Loki",
+          "datasource": {"type": "loki", "uid": "afmzszmzg5q80f"},
           "targets": [
             {
               "expr": "sum(rate({namespace=\"kube-system\"} |= \"jellyfin\" [5m]))",
@@ -52,7 +52,7 @@ data:
           "title": "Slow Requests (>1s)",
           "type": "logs",
           "gridPos": { "x": 0, "y": 16, "w": 24, "h": 8 },
-          "datasource": "Loki",
+          "datasource": {"type": "loki", "uid": "afmzszmzg5q80f"},
           "targets": [
             {
               "expr": "{namespace=\"kube-system\"} |= \"jellyfin\" | pattern `<ip> - - [<_>] \"<method> <path> <_>\" <status> <_> \"<_>\" \"<_>\" <_> \"<router>\" \"<upstream>\" <duration>` | duration > 1000ms",
@@ -64,7 +64,7 @@ data:
           "title": "External vs Internal Traffic",
           "type": "timeseries",
           "gridPos": { "x": 0, "y": 24, "w": 24, "h": 8 },
-          "datasource": "Loki",
+          "datasource": {"type": "loki", "uid": "afmzszmzg5q80f"},
           "targets": [
             {
               "expr": "sum(rate({namespace=\"kube-system\"} |= \"jellyfin\" !~ \"192.168\" [5m]))",
