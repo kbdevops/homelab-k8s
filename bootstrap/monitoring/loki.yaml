@@ -6,7 +6,7 @@ metadata:
 spec:
   repo: https://grafana.github.io/helm-charts
   chart: loki-stack
-  version: "2.10.2"
+  version: "2.9.11"
   targetNamespace: monitoring
   createNamespace: true
   valuesContent: |-
@@ -16,6 +16,8 @@ spec:
         enabled: true
         storageClassName: local-path
         size: 10Gi
+      config:
+        auth_enabled: false
     promtail:
       enabled: true
       config:
