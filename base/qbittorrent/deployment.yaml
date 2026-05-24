@@ -45,7 +45,7 @@ spec:
             type: DirectoryOrCreate
         - name: downloads
           hostPath:
-            path: /home/obiwan/media/downloads
+            path: /home/obiwan/downloads
             type: DirectoryOrCreate
         - name: media
           hostPath:
@@ -53,9 +53,9 @@ spec:
             type: Directory
         - name: movies
           hostPath:
-            path: /home/obiwan/media/movies
+            path: /home/obiwan/movies
             type: Directory
         - name: tv
           hostPath:
-            path: /home/obiwan/media/tv
+            path: /home/obiwan/tv
             type: Directory
