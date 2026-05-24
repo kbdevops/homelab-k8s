@@ -60,6 +60,9 @@ spec:
             datasource: Prometheus
     prometheus:
       prometheusSpec:
+        serviceMonitorSelectorNilUsesHelmValues: false
+        serviceMonitorSelector: {}
+        serviceMonitorNamespaceSelector: {}
         storageSpec:
           volumeClaimTemplate:
             spec:
