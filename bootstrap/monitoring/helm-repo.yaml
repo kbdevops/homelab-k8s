@@ -2,12 +2,13 @@ apiVersion: helm.cattle.io/v1
 kind: HelmChart
 metadata:
   name: kube-prometheus-stack
-  namespace: monitoring
+  namespace: kube-system
 spec:
   repo: https://prometheus-community.github.io/helm-charts
   chart: kube-prometheus-stack
   version: "69.3.2"
   targetNamespace: monitoring
+  createNamespace: true
   valuesContent: |-
     grafana:
       adminPassword: homelab
