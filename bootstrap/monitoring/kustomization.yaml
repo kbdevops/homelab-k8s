@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - helm-repo.yaml
+  - traefik-metrics.yaml
