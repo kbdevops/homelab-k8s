@@ -9,4 +9,5 @@ resources:
   - prowlarr/
   - bazarr/
   - homeassistant/
+  - adguardhome/
   - media-ingress.yaml
