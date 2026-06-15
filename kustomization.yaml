@@ -7,7 +7,6 @@ resources:
   - ingress.yaml
   - application.yaml
   - application-adguard.yaml
-  - application-monitoring.yaml
 
 patches:
   - target:
