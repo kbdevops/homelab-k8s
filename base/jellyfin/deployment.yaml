@@ -14,7 +14,6 @@ spec:
       labels:
         app: jellyfin
     spec:
-      # Removed the strict pod-level securityContext to allow s6-overlay to function
       containers:
       - name: jellyfin
         image: lscr.io/linuxserver/jellyfin:latest
@@ -25,6 +24,10 @@ spec:
           value: "1000"
         - name: PGID
           value: "1000"
+        securityContext:
+          supplementalGroups:
+            - 44
+            - 105
         ports:
         - containerPort: 8096
           name: http
@@ -39,6 +42,8 @@ spec:
           mountPath: /movies
         - name: tv-volume
           mountPath: /tv
+        - name: dri
+          mountPath: /dev/dri
       volumes:
       - name: config-volume
         persistentVolumeClaim:
@@ -59,3 +64,6 @@ spec:
         hostPath:
           path: /home/obiwan/tv
           type: Directory
+      - name: dri
+        hostPath:
+          path: /dev/dri
