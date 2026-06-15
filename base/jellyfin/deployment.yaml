@@ -15,6 +15,7 @@ spec:
         app: jellyfin
     spec:
       securityContext:
+        fsGroup: 1000
         supplementalGroups:
           - 44
           - 105
