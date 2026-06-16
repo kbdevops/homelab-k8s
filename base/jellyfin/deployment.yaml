@@ -19,6 +19,94 @@ spec:
         supplementalGroups:
           - 44
           - 105
+      initContainers:
+      - name: abyss-branding
+        image: alpine:3.20.3
+        imagePullPolicy: IfNotPresent
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            set -eu
+            F=/config/config/branding.xml
+            URL='https://cdn.jsdelivr.net/gh/AumGupta/abyss-jellyfin@main/abyss.css'
+            CSS="@import url('${URL}');"
+            mkdir -p /config/config
+            if [ ! -f "$F" ]; then
+              {
+                echo '<?xml version="1.0" encoding="utf-8"?>'
+                echo '<BrandingOptions>'
+                echo '  <LoginDisclaimer />'
+                echo "  <CustomCss>${CSS}</CustomCss>"
+                echo '  <SplashscreenEnabled>true</SplashscreenEnabled>'
+                echo '</BrandingOptions>'
+              } > "$F"
+              echo "abyss-branding: created $F"
+            elif grep -q "abyss-jellyfin" "$F"; then
+              echo "abyss-branding: abyss CSS already set, skipping"
+            else
+              sed -i \
+                -e "s|<CustomCss />|<CustomCss>${CSS}</CustomCss>|" \
+                -e "s|<CustomCss></CustomCss>|<CustomCss>${CSS}</CustomCss>|" \
+                "$F"
+              echo "abyss-branding: patched CustomCss in $F"
+            fi
+        securityContext:
+          runAsUser: 0
+        volumeMounts:
+          - name: config-volume
+            mountPath: /config
+      - name: abyss-web-seed
+        image: lscr.io/linuxserver/jellyfin:latest
+        imagePullPolicy: IfNotPresent
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            set -eu
+            cp -a /usr/share/jellyfin/web/. /work/
+            echo "abyss-web-seed: copied $(find /work -maxdepth 1 | wc -l) entries"
+        securityContext:
+          runAsUser: 0
+        volumeMounts:
+          - name: jellyfin-web
+            mountPath: /work
+      - name: abyss-spotlight
+        image: alpine:3.20.3
+        imagePullPolicy: IfNotPresent
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            set -eu
+            RAW='https://raw.githubusercontent.com/AumGupta/abyss-jellyfin/main'
+            BASE="${RAW}/scripts/spotlight"
+            STAGE=/tmp/abyss
+            WEB=/web
+            mkdir -p "$STAGE" "$WEB/ui"
+            for f in spotlight.html spotlight.css home-html.chunk.js; do
+              wget -q -O "$STAGE/$f" "$BASE/$f"
+              if [ ! -s "$STAGE/$f" ]; then
+                echo "abyss-spotlight: empty download $f"
+                exit 1
+              fi
+            done
+            cp -f "$STAGE/spotlight.html" "$WEB/ui/spotlight.html"
+            cp -f "$STAGE/spotlight.css"  "$WEB/ui/spotlight.css"
+            CHUNK=$(find "$WEB" -maxdepth 1 -name 'home-html.*.chunk.js' | head -n1)
+            if [ -z "$CHUNK" ]; then
+              echo "abyss-spotlight: no home-html.*.chunk.js, skipping patch"
+              exit 0
+            fi
+            if grep -qE 'abyss-spotlight-frame|featurediframe' "$CHUNK"; then
+              echo "abyss-spotlight: $(basename "$CHUNK") already patched"
+              exit 0
+            fi
+            cp -f "$CHUNK" "${CHUNK}.bak"
+            cp -f "$STAGE/home-html.chunk.js" "$CHUNK"
+            echo "abyss-spotlight: patched $(basename "$CHUNK")"
+        securityContext:
+          runAsUser: 0
+        volumeMounts:
+          - name: jellyfin-web
+            mountPath: /web
       containers:
       - name: jellyfin
         image: lscr.io/linuxserver/jellyfin:latest
@@ -45,10 +133,14 @@ spec:
           mountPath: /tv
         - name: dri
           mountPath: /dev/dri
+        - name: jellyfin-web
+          mountPath: /usr/share/jellyfin/web
       volumes:
       - name: config-volume
         persistentVolumeClaim:
           claimName: jellyfin-config-pvc
+      - name: jellyfin-web
+        emptyDir: {}
       - name: cache-volume
         hostPath:
           path: /home/obiwan/k8s_data/jellyfin/cache
