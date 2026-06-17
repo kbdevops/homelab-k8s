@@ -18,7 +18,7 @@ spec:
         fsGroup: 1000
         supplementalGroups:
           - 44
-          - 105
+          - 110
       initContainers:
       - name: abyss-branding
         image: alpine:3.20.3
