@@ -1,0 +1,47 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: homelab-apps
+  namespace: argocd
+spec:
+  generators:
+    - list:
+        elements:
+          - app: adguardhome
+            namespace: adguard
+          - app: bazarr
+            namespace: media
+          - app: homeassistant
+            namespace: media
+          - app: homepage
+            namespace: media
+          - app: jellyfin
+            namespace: media
+          - app: prowlarr
+            namespace: media
+          - app: qbittorrent
+            namespace: media
+          - app: radarr
+            namespace: media
+          - app: sonarr
+            namespace: media
+          - app: ingress
+            namespace: media
+  template:
+    metadata:
+      name: '{{app}}'
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/kbdevops/homelab-k8s
+        targetRevision: main
+        path: base/{{app}}
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{namespace}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true

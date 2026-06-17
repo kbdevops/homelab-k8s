@@ -5,8 +5,7 @@ resources:
   - https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
   - argocd-cmd-params.yaml
   - ingress.yaml
-  - application.yaml
-  - application-adguard.yaml
+  - applicationset.yaml
 
 secretGenerator:
   - name: argocd-secret
