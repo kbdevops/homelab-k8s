@@ -31,9 +31,7 @@ spec:
                 IP="192.168.1.108"
                 if ! grep -q "$DOMAIN" "$CONFIG"; then
                   echo "Adding $DOMAIN..."
-                  # Ensure we append to the rewrites list correctly
-                  # This is a simple append; AdGuard will handle the YAML structure on next save
-                  printf "  - domain: $DOMAIN\n    answer: $IP\n    enabled: true\n" >> "$CONFIG"
+                  sed -i "/^  rewrites:/a\    - domain: $DOMAIN\n      answer: $IP\n      enabled: true" "$CONFIG"
                 fi
               }
 
@@ -47,6 +45,8 @@ spec:
               add_rewrite "ha.internal"
               add_rewrite "bazarr.internal"
               add_rewrite "adguard.internal"
+              add_rewrite "argocd.internal"
+              add_rewrite "worthly.internal"
           volumeMounts:
             - name: conf
               mountPath: /opt/adguardhome/conf
