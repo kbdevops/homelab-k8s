@@ -27,6 +27,8 @@ spec:
             namespace: media
           - app: ingress
             namespace: media
+          - app: worthly
+            namespace: worthly
   template:
     metadata:
       name: '{{app}}'
