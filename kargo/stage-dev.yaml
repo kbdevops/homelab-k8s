@@ -26,6 +26,4 @@ spec:
                     kustomize:
                       images:
                         - repoURL: registry.registry:5000/worthly
-                          fromOrigin:
-                            kind: Warehouse
-                            name: worthly
+                          tag: ${{ imageFrom("registry.registry:5000/worthly").Tag }}
