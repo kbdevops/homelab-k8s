@@ -25,8 +25,7 @@ spec:
                     desiredRevision: main
                     kustomize:
                       images:
-                        - image: registry.registry:5000/worthly
-                          repoURL: https://github.com/kbdevops/homelab-k8s
+                        - repoURL: registry.registry:5000/worthly
                           fromOrigin:
                             kind: Warehouse
                             name: worthly
