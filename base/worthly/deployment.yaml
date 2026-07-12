@@ -21,8 +21,8 @@ spec:
         fsGroup: 1000
       containers:
         - name: worthly
-          image: worthly:latest
-          imagePullPolicy: IfNotPresent
+          image: ghcr.io/kbdevops/worthly:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 5050
           env:
