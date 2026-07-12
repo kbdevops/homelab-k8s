@@ -12,12 +12,18 @@ spec:
         name: worthly
       sources:
         direct: true
-  promotionMechanisms:
-    argoCDAppUpdates:
-      - appName: worthly-dev
-        appNamespace: argocd
-        imageUpdates:
-          - repoURL: registry.registry:5000/worthly
-            fromObjectRef:
-              kind: Warehouse
-              name: worthly
+  promotionTemplate:
+    spec:
+      steps:
+        - uses: argocd-update
+          config:
+            apps:
+              - name: worthly-dev
+                namespace: argocd
+                sources:
+                  - repoURL: https://github.com/kbdevops/homelab-k8s
+                    desiredRevision: main
+                    kustomize:
+                      images:
+                        - imageName: registry.registry:5000/worthly
+                          repoURL: registry.registry:5000/worthly
