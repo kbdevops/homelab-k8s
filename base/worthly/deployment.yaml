@@ -35,7 +35,7 @@ spec:
             - name: JWT_SECRET_KEY
               valueFrom:
                 secretKeyRef:
-                  name: worthly-api-secrets
+                  name: worthly-jwt
                   key: JWT_SECRET_KEY
           volumeMounts:
             - name: data
