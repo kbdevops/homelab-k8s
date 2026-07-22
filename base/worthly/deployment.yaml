@@ -32,6 +32,11 @@ spec:
               value: "/app/data"
             - name: TZ
               value: "Australia/Melbourne"
+            - name: JWT_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: worthly-api-secrets
+                  key: JWT_SECRET_KEY
           volumeMounts:
             - name: data
               mountPath: /app/data
