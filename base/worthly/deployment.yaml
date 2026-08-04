@@ -37,6 +37,16 @@ spec:
                 secretKeyRef:
                   name: worthly-jwt
                   key: JWT_SECRET_KEY
+            # Behind Tailscale Funnel -> Traefik, every request reaches the app from the
+            # proxy, so without this the per-IP login throttle sees one client and 10 bad
+            # attempts from anyone would lock out everyone (including you) for 15 minutes.
+            - name: TRUST_PROXY
+              value: "1"
+            # Reachable from the internet: send HSTS, and keep registration closed.
+            - name: PUBLIC_MODE
+              value: "1"
+            - name: ALLOW_REGISTRATION
+              value: "0"
           volumeMounts:
             - name: data
               mountPath: /app/data

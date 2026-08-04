@@ -9,4 +9,17 @@ spec:
   ports:
     - port: 5050
       targetPort: 5050
-  type: ClusterIP
+      # Fixed NodePort so Tailscale Funnel, which runs on the host, has a stable local
+      # target: phone -> Funnel (TLS, *.ts.net) -> 127.0.0.1:30505 -> pod.
+      #
+      # Funnel deliberately bypasses Traefik here. Funnel forwards the request with
+      # Host: <node>.<tailnet>.ts.net, and the worthly IngressRoute matches only
+      # Host(`worthly.internal`) — so routing through Traefik would 404 until that
+      # hostname were hard-coded into the rule. Going direct keeps the tailnet hostname
+      # out of the manifests and leaves LAN access via worthly.internal untouched.
+      #
+      # This NodePort is bound on the node, so it is reachable from the LAN as well.
+      # It is NOT port-forwarded at the router, and the app requires a JWT on every data
+      # route, but treat it as LAN-visible rather than private.
+      nodePort: 30505
+  type: NodePort
