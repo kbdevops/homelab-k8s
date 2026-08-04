@@ -29,7 +29,7 @@ metadata:
 spec:
   secretName: worthly-tls
   dnsNames:
-    - mrmongoose.duckdns.org
+    - worthly.duckdns.org
   issuerRef:
     name: letsencrypt-prod
     kind: ClusterIssuer
