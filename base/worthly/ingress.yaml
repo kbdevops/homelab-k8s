@@ -20,6 +20,11 @@ spec:
   entryPoints:
     - web
   routes:
+    # There is deliberately NO PathPrefix(`/worthly`) route here. It existed as a
+    # cleartext fallback on the shared port 80 before TLS was set up, and it let anyone
+    # reach the login form over plain HTTP on the bare IP — which defeats the certificate
+    # on the public hostname. Public access is HTTPS-only; the LAN keeps plain HTTP.
+
     # LAN hostname over plain HTTP, unchanged.
     - match: Host(`worthly.internal`)
       kind: Rule
@@ -43,14 +48,6 @@ spec:
         - name: worthly
           port: 5050
 
-    # Path route kept so http://<ip>/worthly still works if DNS or the cert is ever down.
-    # The app strips the prefix itself, so no stripPrefix middleware is needed.
-    - match: PathPrefix(`/worthly`)
-      kind: Rule
-      priority: 900
-      services:
-        - name: worthly
-          port: 5050
 ---
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
