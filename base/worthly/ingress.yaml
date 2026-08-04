@@ -27,8 +27,14 @@ spec:
         - name: worthly
           port: 5050
 
-    # Public hostname on HTTP -> bounce to HTTPS.
-    - match: Host(`mrmongoose.duckdns.org`)
+    # Public hostname on HTTP -> bounce to HTTPS, EXCEPT the ACME challenge path.
+    #
+    # Without the exclusion this redirect swallows Let's Encrypt's HTTP-01 challenge and
+    # sends it to :443 — which cannot be open yet, because opening it needs the very
+    # certificate the challenge is trying to issue. cert-manager reported exactly that:
+    #   dial tcp <ip>:443: connect: no route to host
+    # It would also break every 60-day renewal, not just the first issuance.
+    - match: Host(`mrmongoose.duckdns.org`) && !PathPrefix(`/.well-known/acme-challenge/`)
       kind: Rule
       priority: 1000
       middlewares:
