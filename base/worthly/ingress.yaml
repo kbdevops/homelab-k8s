@@ -7,8 +7,26 @@ spec:
   entryPoints:
     - web
   routes:
+    # LAN hostname, unchanged.
     - match: Host(`worthly.internal`)
       kind: Rule
+      services:
+        - name: worthly
+          port: 5050
+
+    # Path-based route so the app is reachable on the shared port 80 without a hostname,
+    # e.g. http://<public-ip>/worthly — Jellyfin already answers host-less requests at /.
+    #
+    # priority is set explicitly and high: Traefik orders routers by rule length by
+    # default, and `PathPrefix(/worthly)` is short enough to lose to the existing
+    # host-less catch-all that currently serves Jellyfin.
+    #
+    # No stripPrefix middleware on purpose. The app strips URL_PREFIX itself (see
+    # _strip_url_prefix in app.py), so it serves correctly whether or not a proxy has
+    # already removed the prefix — which also keeps the LAN NodePort working.
+    - match: PathPrefix(`/worthly`)
+      kind: Rule
+      priority: 1000
       services:
         - name: worthly
           port: 5050
