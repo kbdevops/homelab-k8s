@@ -1,3 +1,16 @@
+# Redirect the public hostname from HTTP to HTTPS. Scoped to that Host only — a
+# catch-all redirect on the `web` entrypoint would also hijack Jellyfin, which answers
+# host-less requests on port 80.
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: redirect-https
+  namespace: worthly
+spec:
+  redirectScheme:
+    scheme: https
+    permanent: true
+---
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
@@ -7,26 +20,48 @@ spec:
   entryPoints:
     - web
   routes:
-    # LAN hostname, unchanged.
+    # LAN hostname over plain HTTP, unchanged.
     - match: Host(`worthly.internal`)
       kind: Rule
       services:
         - name: worthly
           port: 5050
 
-    # Path-based route so the app is reachable on the shared port 80 without a hostname,
-    # e.g. http://<public-ip>/worthly — Jellyfin already answers host-less requests at /.
-    #
-    # priority is set explicitly and high: Traefik orders routers by rule length by
-    # default, and `PathPrefix(/worthly)` is short enough to lose to the existing
-    # host-less catch-all that currently serves Jellyfin.
-    #
-    # No stripPrefix middleware on purpose. The app strips URL_PREFIX itself (see
-    # _strip_url_prefix in app.py), so it serves correctly whether or not a proxy has
-    # already removed the prefix — which also keeps the LAN NodePort working.
-    - match: PathPrefix(`/worthly`)
+    # Public hostname on HTTP -> bounce to HTTPS.
+    - match: Host(`mrmongoose.duckdns.org`)
       kind: Rule
       priority: 1000
+      middlewares:
+        - name: redirect-https
       services:
         - name: worthly
           port: 5050
+
+    # Path route kept so http://<ip>/worthly still works if DNS or the cert is ever down.
+    # The app strips the prefix itself, so no stripPrefix middleware is needed.
+    - match: PathPrefix(`/worthly`)
+      kind: Rule
+      priority: 900
+      services:
+        - name: worthly
+          port: 5050
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: worthly-tls
+  namespace: worthly
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    # Served at the ROOT of the public hostname. The bundle is built with base=/worthly/,
+    # but that is fine here: the browser requests /worthly/assets/... against this same
+    # host, the route matches any path, and the app strips the prefix.
+    - match: Host(`mrmongoose.duckdns.org`)
+      kind: Rule
+      services:
+        - name: worthly
+          port: 5050
+  tls:
+    secretName: worthly-tls

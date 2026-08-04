@@ -1,0 +1,35 @@
+# Let's Encrypt account + issuance for the DuckDNS hostname.
+#
+# HTTP-01 rather than DNS-01: port 80 is already forwarded, and DuckDNS DNS-01 would need
+# a webhook solver cert-manager doesn't ship. The challenge is served at
+# /.well-known/acme-challenge/ on port 80 by a temporary pod cert-manager creates, which
+# is why the solver needs the Traefik ingress class.
+#
+# No `email` field: it is optional, only used for expiry notices, and cert-manager renews
+# automatically at 2/3 of the lifetime. Left out to keep a personal address out of the repo.
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    privateKeySecretRef:
+      name: letsencrypt-prod-account-key
+    solvers:
+      - http01:
+          ingress:
+            class: traefik
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: worthly-tls
+  namespace: worthly
+spec:
+  secretName: worthly-tls
+  dnsNames:
+    - mrmongoose.duckdns.org
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
